@@ -1,95 +1,29 @@
-
+/*
 #include <BLEDevice.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <string>
-//#include <WiFi.h>
+#include <WiFi.h>
 #include "BLEBeacon.h"
+*/
+#include "SensusDevice.h"
 using namespace std;
 int scanTime = 5; //In seconds
-BLEScan* pBLEScan;
 
-class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
-    void onResult(BLEAdvertisedDevice advertisedDevice) {
-              BLEBeacon oBeacon = BLEBeacon();
-              
-              std::string strManufacturerData = advertisedDevice.getManufacturerData();
-              uint8_t cManufacturerData[100];
-              strManufacturerData.copy((char *)cManufacturerData, strManufacturerData.length(), 0);
-              
-              oBeacon.setData(strManufacturerData);
-              String proximityUUID = getProximityUUIDString(oBeacon);
-
-              if(proximityUUID == "fa9dbcd1e23948dfa7f6d7e97237253e")
-              {
-                    Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
-                    Serial.printf("=> %d \n", advertisedDevice.getRSSI());
-                    Serial.printf("=> %s \n\n", proximityUUID.c_str()); 
-              }
-      
-
-    }
-    
-    String getProximityUUIDString(BLEBeacon beacon) {
-      std::string serviceData = beacon.getProximityUUID().toString().c_str();
-      int serviceDataLength = serviceData.length();
-      String returnedString = "";
-      int i = serviceDataLength;
-      while (i > 0)
-      {
-        if (serviceData[i-1] == '-') {
-          i--;
-        }
-        char a = serviceData[i-1];
-        char b = serviceData[i-2];
-        returnedString += b;
-        returnedString += a;
-    
-        i -= 2;
-      }
-    
-      return returnedString;
-    }
-};
 
 const char* ssid = "stuff";
 const char* password = "shit";
-
+SensusDevice sensusDevice;
 void setup() {
   
   Serial.begin(115200);
-  Serial.println("Scanning...");
-/*
-
-  //wifi shit
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-  }
- 
-  Serial.println("Connected to the WiFi network");
-*/
-  BLEDevice::init("");
-  pBLEScan = BLEDevice::getScan(); //create new scan
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
-  pBLEScan->setInterval(100);
-  pBLEScan->setWindow(99);  // less or equal setInterval value
+  sensusDevice.connectToWifi(ssid, password);
+  sensusDevice.setupBLEScanner();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
-  Serial.print("Devices found: ");
-  //Serial.println(foundDevices.getCount());
-  //Serial.println("Scan done!");
-  pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
-  delay(2000);
+  sensusDevice.detectDevices();
 }
-
-
 
 
 
