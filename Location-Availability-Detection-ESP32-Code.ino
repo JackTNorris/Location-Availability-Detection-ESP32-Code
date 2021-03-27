@@ -11,13 +11,13 @@ using namespace std;
 int scanTime = 5; //In seconds
 
 
-const char* ssid = "stuff";
-const char* password = "shit";
+const char* ssid = "GNEGINNOV32";
+const char* password = "testinginnov";
 SensusDevice sensusDevice;
 void setup() {
   
   Serial.begin(115200);
-  sensusDevice.connectToWifi(ssid, password);
+  //sensusDevice.connectToWifi(ssid, password);
   sensusDevice.setupBLEScanner();
 }
 

@@ -15,12 +15,14 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
             
             oBeacon.setData(strManufacturerData);
             String proximityUUID = getProximityUUIDString(oBeacon);
+            /*
             if(proximityUUID == "fa9dbcd1e23948dfa7f6d7e97237253e")
             {
                     Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
                     Serial.printf("=> %d \n", advertisedDevice.getRSSI());
                     Serial.printf("=> %s \n\n", proximityUUID.c_str()); 
             }
+            */
     
     }
     
