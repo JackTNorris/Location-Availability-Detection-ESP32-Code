@@ -8,10 +8,13 @@
 #include <BLEAdvertisedDevice.h>
 #include <PubSubClient.h>
 #include <string>
+#include <sstream>
 
 using namespace std;
 class SensusDevice {
     public:
+        SensusDevice(): ROOM_KEY("-MUCHPqgtcwfCLoY386e"), ORGANIZATION("uark") {}
+    
         void connectToWifi(const char *ssid, const char *password)
         {
             Serial.println("Scanning...");
@@ -34,13 +37,28 @@ class SensusDevice {
             pBLEScan->setWindow(99);  // less or equal setInterval value
         }
 
+        void sendUpdatedOccupancyInfo()
+        {
+            if (!client->connected()) {
+              reconnectMQTT();
+            }
+            client->loop();
+            string payload = "{\"key\": \"" + ROOM_KEY + "\", \"organization\": \"" + ORGANIZATION + "\", \"occupancy\": " + occupancyString() + "  }";
+            client->publish("gnegTest", payload.c_str());
+        }
+
         void detectDevices()
         {
               BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
-              Serial.print("Devices found: ");
+              //Serial.print("Devices found: ");
+              int countOfPhones = getCountOfPhones(foundDevices);
+              if(countOfPhones != occupancy)
+              {
+                occupancy = countOfPhones;
+                sendUpdatedOccupancyInfo(); 
+                Serial.println("Updated info");
+              }
               Serial.println(getCountOfPhones(foundDevices));
-              //Serial.println(foundDevices.getCount());
-              //Serial.println("Scan done!");
               pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
               delay(2000);
         }
@@ -77,9 +95,6 @@ class SensusDevice {
             if(proximityUUID != "00000000000000000000000000000000")
             {
                     count ++;
-                    Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
-                    Serial.printf("=> %d \n", advertisedDevice.getRSSI());
-                    Serial.printf("=> %s \n\n", proximityUUID.c_str()); 
             }
           }
           return count;
@@ -106,12 +121,41 @@ class SensusDevice {
           
           return returnedString;
         }
-    
+
+        string occupancyString()
+        {
+            stringstream ss;
+            ss << occupancy;
+            string out_string = ss.str();
+            return out_string;
+        }
+
+        void reconnectMQTT() {
+            // Loop until we're reconnected
+            while (!client->connected()) {
+              Serial.print("Attempting MQTT connection...");
+              // Attempt to connect
+              if (client->connect("")) {
+                Serial.println("connected");
+              } else {
+                Serial.print("failed, rc=");
+                Serial.print(client->state());
+                Serial.println(" try again in 5 seconds");
+                // Wait 5 seconds before retrying
+                delay(5000);
+              }
+            }
+        }
+
+
         BLEScan* pBLEScan;
         WiFiClient espClient;
         PubSubClient *client;
         int scanTime = 5;
-        int maxCapacity;
+        int occupancy = 0;
+        const string ROOM_KEY;
+        const string ORGANIZATION;
+        
 };
 
 #endif
