@@ -15,8 +15,9 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
             
             oBeacon.setData(strManufacturerData);
             String proximityUUID = getProximityUUIDString(oBeacon);
+            String sensusKey = proximityUUID.substring(proximityUUID.length() - 12);
             /*
-            if(proximityUUID == "fa9dbcd1e23948dfa7f6d7e97237253e")
+            if(sensusKey == "73656e737573") //73656e737573 is "sensus" encoded
             {
                     Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
                     Serial.printf("=> %d \n", advertisedDevice.getRSSI());

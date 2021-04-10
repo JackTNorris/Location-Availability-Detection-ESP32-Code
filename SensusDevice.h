@@ -13,7 +13,7 @@
 using namespace std;
 class SensusDevice {
     public:
-        SensusDevice(): ROOM_KEY("-MUCHPqgtcwfCLoY386e"), ORGANIZATION("uark") {}
+        SensusDevice(): ROOM_KEY("-MUCHPqgtcwfCLoY386e"), ORGANIZATION("uark"), detectionRSSI(-60) {}
     
         void connectToWifi(const char *ssid, const char *password)
         {
@@ -95,10 +95,18 @@ class SensusDevice {
             //if(proximityUUID == "fa9dbcd1e23948dfa7f6-d7e97237253e")
             if(sensusKey == "73656e737573") //73656e737573 is "sensus" encoded
             {
-                    count ++;
+                    if(isInRange(&advertisedDevice))
+                    {
+                             count ++;
+                    }
             }
           }
           return count;
+        }
+
+        bool isInRange(BLEAdvertisedDevice *device)
+        {
+          return device->getRSSI() > detectionRSSI; 
         }
 
         String getProximityUUIDString(BLEBeacon beacon) 
@@ -156,6 +164,7 @@ class SensusDevice {
         int occupancy = 0;
         const string ROOM_KEY;
         const string ORGANIZATION;
+        const int detectionRSSI;
         
 };
 
